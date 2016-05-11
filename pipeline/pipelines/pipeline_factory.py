@@ -19,6 +19,9 @@ from pipeline.pipelines import pipeline_base
 # These are required to list the subclasses of pipeline_base
 from pipeline.pipelines import sample_pipeline  # noqa
 from pipeline.pipelines import code_generation_pipeline  # noqa
+from pipeline.tasks import config_tasks
+from pipeline.utils import pipeline_util
+from taskflow.patterns import linear_flow
 
 
 def make_pipeline_flow(pipeline_name, **kwargs):
@@ -55,3 +58,36 @@ def _rec_subclasses(cls):
             subclasses.append(subcls)
             subclasses += _rec_subclasses(subcls)
     return subclasses
+
+
+class ConfigLoadingCodeGenerationPipeline(pipeline_base.PipelineBase):
+    """The pipeline which loads the config on the task execution environment.
+
+    This fits well to execute tasks remotely, so local commandline users don't
+    have to set up the pipeline configs.
+    """
+
+    def __init__(self, **kwargs):
+        super(ConfigLoadingCodeGenerationPipeline, self).__init__(**kwargs)
+
+    def do_build_flow(self, **kwargs):
+        flow = linear_flow.Flow('config-loading-codegen')
+        flow.add(config_tasks.ConfigReadTask('ConfigReader', inject=kwargs))
+        pipeline_name = self.get_pipeline_prefix(**kwargs) + 'ClientPipeline'
+        kwargs['suppress_validate_kwargs'] = True
+        pipeline = make_pipeline(pipeline_name, **kwargs)
+        flow.add(pipeline.flow)
+        return flow
+
+    def get_pipeline_prefix(self, **kwargs):
+        language_prefix = kwargs['language']
+        if language_prefix == 'csharp':
+            language_prefix = 'CSharp'
+        else:
+            language_prefix = language_prefix.capitalize()
+        type_prefix = kwargs['client_type'].capitalize()
+        return language_prefix + type_prefix
+
+    def validate_kwargs(self, **kwargs):
+        pipeline_util.validate_exists(
+            ['language', 'api_version', 'client_type', 'reporoot'], **kwargs)

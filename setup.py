@@ -40,7 +40,7 @@ setuptools.setup(
     license='Apache-2.0',
     install_requires=requirements,
     packages=setuptools.find_packages(),
-    scripts=['execute_pipeline.py', 'start_conductor.py'],
+    scripts=['execute_pipeline.py', 'start_conductor.py', 'api_codegen.py'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',

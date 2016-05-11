@@ -29,7 +29,8 @@ class PipelineBase(object):
 
     def build_flow(self, **kwargs):
         """Make the task flow based on kwargs."""
-        self.validate_kwargs(**kwargs)
+        if 'suppress_validate_kwargs' not in kwargs:
+            self.validate_kwargs(**kwargs)
 
         # Call do_make_flow implemented by subclass to make the flow.
         flow = self.do_build_flow(**kwargs)

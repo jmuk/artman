@@ -37,11 +37,10 @@ Example:
 
 import argparse
 import ast
-import os
-import yaml
 
-from taskflow import engines, task
+from taskflow import engines
 from pipeline.pipelines import pipeline_factory
+from pipeline.utils import config_util
 from pipeline.utils import job_util
 
 
@@ -88,16 +87,7 @@ def _CreateArgumentParser():
 def _load_config_spec(config_spec, repl_vars):
   (config_path, config_sections) = config_spec.strip().split(':')
   config_sections = config_sections.split('|')
-  data = {}
-  with open(config_path) as config_file:
-    all_config_data = yaml.load(config_file)
-  for section in config_sections:
-    data.update(all_config_data[section])
-
-  repl_vars["THISDIR"] = os.path.dirname(config_path)
-  _var_replace_config_data(data, repl_vars)
-  del repl_vars["THISDIR"]
-  return data
+  return config_util.load_config(config_path, config_sections, repl_vars)
 
 
 def _parse_args():
@@ -120,21 +110,6 @@ def _parse_args():
   return (flags.pipeline_name,
           pipeline_args,
           flags.remote_mode)
-
-
-def _var_replace_config_data(data, repl_vars):
-  for (k, v) in data.items():
-    if type(v) is list:
-      data[k] = [_var_replace(lv, repl_vars) for lv in v]
-    elif type(v) is not bool:
-      data[k] = _var_replace(v, repl_vars)
-
-
-def _var_replace(in_str, repl_vars):
-  new_str = in_str
-  for (k, v) in repl_vars.iteritems():
-    new_str = new_str.replace('${' + k + '}', v)
-  return new_str
 
 
 if __name__ == "__main__":
