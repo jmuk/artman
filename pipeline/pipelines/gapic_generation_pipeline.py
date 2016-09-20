@@ -112,8 +112,7 @@ class _RubyGapicTaskFactory(GapicTaskFactoryBase):
 
     def _get_gapic_package_tasks(self, **kwargs):
         return [gapic_tasks.GapicCopyTask,
-                gapic_tasks.GapicPackmanTask,
-                package_tasks.RubyPackageGenTask]
+                gapic_tasks.GapicPackmanTask]
 
 
 class _NodeJSGapicTaskFactory(GapicTaskFactoryBase):
