@@ -15,7 +15,7 @@
 """Pipelines that run gRPC codegen"""
 
 from pipeline.pipelines import code_generation_pipeline as code_gen
-from pipeline.tasks import protoc_tasks, package_tasks, publish_tasks
+from pipeline.tasks import protoc_tasks, publish_tasks
 from pipeline.utils import task_utils
 
 
